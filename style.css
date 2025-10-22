@@ -6,6 +6,8 @@ body {
 }
 canvas {
   display: block;
-  touch-action: none; /* importante para gestos táctiles */
   margin: 0 auto;
+  touch-action: none; /* permite gestos táctiles */
+  width: 100% !important;
+  height: 100% !important;
 }
