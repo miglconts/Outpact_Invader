@@ -1,8 +1,11 @@
-html, body {
+html,
+body {
   margin: 0;
-  font-family: 'Outpact', sans-serif;
+  font-family: "Outpact", sans-serif;
   padding: 0;
 }
 canvas {
   display: block;
+  touch-action: none; /* importante para gestos táctiles */
+  margin: 0 auto;
 }
