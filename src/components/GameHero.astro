@@ -1,0 +1,788 @@
+---
+---
+
+<section id="game" class="game-hero" aria-label="Outpact Invaders 2.5D Arcade en Three.js">
+  <canvas id="outpact-canvas" class="game-canvas"></canvas>
+
+  <!-- Unified Single-Row Top HUD Bar (No header overlap on mobile) -->
+  <header class="hud-top">
+    <div class="hud-stats">
+      <div class="hud-stat-item">
+        <span class="hud-label">PTS</span>
+        <span id="hud-score" class="hud-value">0</span>
+        <span id="hud-combo" class="hud-combo" hidden>x1</span>
+      </div>
+      <span class="hud-divider" aria-hidden="true"></span>
+      <div class="hud-stat-item">
+        <span class="hud-label">OLA</span>
+        <span id="hud-wave" class="hud-value">1</span>
+      </div>
+      <span class="hud-divider" aria-hidden="true"></span>
+      <div class="hud-stat-item">
+        <span id="hud-lives" class="hud-value hud-lives" aria-label="Vidas">♥♥♥</span>
+      </div>
+    </div>
+
+    <!-- Desktop-only Live Variable Font Physics Telemetry -->
+    <div id="hud-telemetry" class="hud-telemetry" aria-live="polite">
+      <div class="telemetry-glyph-box">
+        <span id="telemetry-glyph" class="telemetry-glyph">Ω</span>
+      </div>
+      <div class="telemetry-details">
+        <div class="telemetry-row">
+          <span class="telemetry-title">PESO &amp; MASA</span>
+          <span id="telemetry-wght" class="telemetry-code">wght: 1000</span>
+        </div>
+        <div class="telemetry-bar-track">
+          <div id="telemetry-bar-fill" class="telemetry-bar-fill" style="width: 100%"></div>
+        </div>
+        <div class="telemetry-row telemetry-sub">
+          <span id="telemetry-mass">Masa: 4.50 kg</span>
+          <span id="telemetry-hp">HP: 7/7</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pause / Menu Button -->
+    <div class="hud-controls">
+      <button
+        id="btn-pause"
+        type="button"
+        class="btn-pause-trigger"
+        aria-label="Pausar y abrir menú de Outpact Arcade"
+      >
+        <span class="pause-icon" aria-hidden="true">❚❚</span>
+        <span id="pause-btn-label" class="pause-text">MENÚ</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Start Screen Overlay -->
+  <div id="overlay-start" class="game-overlay">
+    <div class="overlay-card">
+      <div class="brand-lockup">
+        <span class="brand-pill">OUTPACT ARCADE</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="hero-title-line1">OUTPACT</span>
+        <span class="hero-title-line2">INVADERS</span>
+      </h1>
+      <p class="hero-desc">
+        Desliza para moverte y toca para disparar. Reduce el peso variable
+        (<code>wght: 1000 → 1</code>) y la masa física de cada glifo hasta desintegrarlo.
+      </p>
+
+      <div class="hero-actions">
+        <button id="btn-start" type="button" class="btn btn-primary btn-lg">
+          JUGAR AHORA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause & Arcade Menu Overlay -->
+  <div id="overlay-pause" class="game-overlay" hidden>
+    <div class="overlay-card overlay-menu-card" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+      <div class="menu-header">
+        <div class="brand-group">
+          <span class="brand-mark">OUTPACT</span>
+          <span class="brand-sub">ARCADE</span>
+        </div>
+        <span id="menu-status-badge" class="badge">EN PAUSA</span>
+      </div>
+
+      <h2 id="menu-title" class="sr-only">Menú de Pausa y Selector de Juegos</h2>
+
+      <!-- Game Selector inside Pause Menu -->
+      <div class="menu-section">
+        <span class="menu-section-label">SELECCIONAR JUEGO</span>
+        <nav class="menu-games-grid" aria-label="Selector de juegos Outpact">
+          <a href="/" class="menu-game-item active" aria-current="page">
+            <span class="game-num">01</span>
+            <div class="game-info">
+              <strong>INVADERS 2.5D</strong>
+              <span>Disparos &amp; masa variable</span>
+            </div>
+            <span class="game-status-tag">ACTIVO</span>
+          </a>
+          <a href="/arkanoid" class="menu-game-item">
+            <span class="game-num">02</span>
+            <div class="game-info">
+              <strong>ARKANOID VF</strong>
+              <span>Rebote &amp; adelgazamiento de bloques</span>
+            </div>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sound & Quick Settings -->
+      <div class="menu-section">
+        <span class="menu-section-label">OPCIONES</span>
+        <div class="menu-options-row">
+          <button id="btn-mute" type="button" class="btn btn-outline menu-opt-btn">
+            <span id="mute-label">SONIDO SFX: ON</span>
+          </button>
+          <button id="btn-menu-restart" type="button" class="btn btn-outline menu-opt-btn">
+            REINICIAR PARTIDA
+          </button>
+        </div>
+      </div>
+
+      <div class="menu-footer-actions">
+        <button id="btn-resume" type="button" class="btn btn-primary btn-block">
+          CONTINUAR JUEGO
+        </button>
+        <a
+          href="https://tortilla.studio/fonts/outpact"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="foundry-menu-link"
+        >
+          Conoce la fuente en tortilla.studio/fonts/outpact ↗
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Overlay -->
+  <div id="overlay-gameover" class="game-overlay" hidden>
+    <div class="overlay-card overlay-card-compact">
+      <span class="badge badge-danger">FIN DEL JUEGO</span>
+      <h2 class="overlay-heading text-danger">GAME OVER</h2>
+      <p class="gameover-score">
+        Puntuación: <strong id="final-score">0</strong>
+      </p>
+      <div class="hero-actions">
+        <button id="btn-restart" type="button" class="btn btn-primary btn-lg">
+          REINTENTAR
+        </button>
+        <button id="btn-gameover-menu" type="button" class="btn btn-outline">
+          VER MENÚ ARCADE
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { OutpactInvaders3D } from '../game/OutpactInvaders3D';
+
+  const canvas = document.getElementById('outpact-canvas') as HTMLCanvasElement | null;
+
+  const scoreEl = document.getElementById('hud-score')!;
+  const comboEl = document.getElementById('hud-combo')!;
+  const waveEl = document.getElementById('hud-wave')!;
+  const livesEl = document.getElementById('hud-lives')!;
+
+  const telemetryGlyph = document.getElementById('telemetry-glyph')!;
+  const telemetryWght = document.getElementById('telemetry-wght')!;
+  const telemetryBarFill = document.getElementById('telemetry-bar-fill')!;
+  const telemetryMass = document.getElementById('telemetry-mass')!;
+  const telemetryHp = document.getElementById('telemetry-hp')!;
+
+  const overlayStart = document.getElementById('overlay-start')!;
+  const overlayPause = document.getElementById('overlay-pause')!;
+  const overlayGameOver = document.getElementById('overlay-gameover')!;
+  const finalScoreEl = document.getElementById('final-score')!;
+  const menuStatusBadge = document.getElementById('menu-status-badge')!;
+
+  const btnStart = document.getElementById('btn-start')!;
+  const btnRestart = document.getElementById('btn-restart')!;
+  const btnMenuRestart = document.getElementById('btn-menu-restart')!;
+  const btnPause = document.getElementById('btn-pause')!;
+  const pauseBtnLabel = document.getElementById('pause-btn-label')!;
+  const btnResume = document.getElementById('btn-resume')!;
+  const btnMute = document.getElementById('btn-mute')!;
+  const muteLabel = document.getElementById('mute-label')!;
+  const btnGameOverMenu = document.getElementById('btn-gameover-menu')!;
+
+  let currentState: 'start' | 'playing' | 'paused' | 'gameOver' = 'start';
+
+  if (canvas) {
+    const game = new OutpactInvaders3D(canvas, {
+      onScoreChange(score, combo) {
+        scoreEl.textContent = String(score);
+        if (combo > 1) {
+          comboEl.hidden = false;
+          comboEl.textContent = `x${combo}`;
+        } else {
+          comboEl.hidden = true;
+        }
+      },
+      onWaveChange(wave) {
+        waveEl.textContent = String(wave);
+      },
+      onLivesChange(lives) {
+        livesEl.textContent = lives > 0 ? '♥'.repeat(lives) : '0';
+      },
+      onStateChange(state, finalScore) {
+        currentState = state;
+        overlayStart.hidden = state !== 'start';
+        overlayPause.hidden = state !== 'paused';
+        overlayGameOver.hidden = state !== 'gameOver';
+        pauseBtnLabel.textContent = state === 'paused' ? 'CERRAR' : 'MENÚ';
+        menuStatusBadge.textContent = state === 'paused' ? 'EN PAUSA' : 'MENÚ ARCADE';
+        if (state === 'gameOver') {
+          finalScoreEl.textContent = String(finalScore);
+        }
+      },
+      onTargetInspect(info) {
+        if (!info) return;
+        telemetryGlyph.textContent = info.label;
+        telemetryGlyph.style.fontVariationSettings = `'wght' ${info.wght}`;
+        telemetryWght.textContent = `wght: ${info.wght}`;
+        telemetryBarFill.style.width = `${Math.max(4, (info.wght / 1000) * 100)}%`;
+        telemetryMass.textContent = `Masa: ${info.mass.toFixed(2)} kg`;
+        telemetryHp.textContent = `HP: ${info.health}/${info.maxHealth}`;
+      }
+    });
+
+    btnStart.addEventListener('click', () => game.startGame());
+    btnRestart.addEventListener('click', () => game.startGame());
+    btnMenuRestart.addEventListener('click', () => game.startGame());
+
+    btnPause.addEventListener('click', () => {
+      if (currentState === 'playing' || currentState === 'paused') {
+        game.togglePause();
+      } else {
+        // Allow inspecting the Arcade Menu from Start or Game Over screens too
+        const isMenuOpen = !overlayPause.hidden;
+        if (isMenuOpen) {
+          overlayPause.hidden = true;
+          overlayStart.hidden = currentState !== 'start';
+          overlayGameOver.hidden = currentState !== 'gameOver';
+          pauseBtnLabel.textContent = 'MENÚ';
+        } else {
+          overlayStart.hidden = true;
+          overlayGameOver.hidden = true;
+          overlayPause.hidden = false;
+          menuStatusBadge.textContent = 'MENÚ ARCADE';
+          pauseBtnLabel.textContent = 'CERRAR';
+        }
+      }
+    });
+
+    btnResume.addEventListener('click', () => {
+      if (currentState === 'paused') {
+        game.togglePause();
+      } else {
+        overlayPause.hidden = true;
+        game.startGame();
+      }
+    });
+
+    btnGameOverMenu.addEventListener('click', () => {
+      overlayGameOver.hidden = true;
+      overlayPause.hidden = false;
+      menuStatusBadge.textContent = 'MENÚ ARCADE';
+      pauseBtnLabel.textContent = 'CERRAR';
+    });
+
+    btnMute.addEventListener('click', () => {
+      game.synth.muted = !game.synth.muted;
+      muteLabel.textContent = game.synth.muted ? 'SONIDO SFX: OFF' : 'SONIDO SFX: ON';
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      game.setOffscreenPaused(document.hidden);
+    });
+  }
+</script>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .game-hero {
+    position: relative;
+    width: 100%;
+    height: 100dvh;
+    background-color: var(--bg-deep);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .game-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    touch-action: none;
+    z-index: 1;
+  }
+
+  /* Compact Single-Row Top HUD */
+  .hud-top {
+    position: relative;
+    z-index: 20;
+    max-width: 92rem;
+    width: 100%;
+    margin-inline: auto;
+    padding: 0.65rem clamp(0.65rem, 2vw, 1.5rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    pointer-events: none;
+  }
+
+  .hud-stats,
+  .hud-controls,
+  .hud-telemetry {
+    pointer-events: auto;
+  }
+
+  .hud-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(0.45rem, 1.5vw, 0.85rem);
+    background: rgba(14, 16, 29, 0.84);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    min-block-size: 2.5rem;
+  }
+
+  .hud-stat-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .hud-divider {
+    width: 1px;
+    height: 1rem;
+    background: var(--border-subtle);
+  }
+
+  .hud-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+  }
+
+  .hud-value {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    font-variation-settings: 'wght' 850;
+    color: var(--text-primary);
+  }
+
+  .hud-lives {
+    color: var(--accent-pink);
+    letter-spacing: 0.08em;
+    font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+  }
+
+  .hud-combo {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 0.05rem 0.32rem;
+    border-radius: 0.25rem;
+    background: var(--accent-yellow);
+    color: #070810;
+    font-weight: 700;
+  }
+
+  /* Pause / Menu Button */
+  .btn-pause-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-block-size: 2.5rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(14, 16, 29, 0.88);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(245, 255, 0, 0.4);
+    color: var(--accent-yellow);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-pause-trigger:hover,
+  .btn-pause-trigger:focus-visible {
+    background: var(--accent-yellow);
+    color: #070810;
+    box-shadow: 0 0 20px rgba(245, 255, 0, 0.4);
+  }
+
+  .pause-icon {
+    font-size: 0.7rem;
+    letter-spacing: -0.05em;
+  }
+
+  /* Desktop Telemetry */
+  .hud-telemetry {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(14, 16, 29, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 229, 255, 0.3);
+    border-radius: 0.6rem;
+    padding: 0.35rem 0.85rem;
+    min-block-size: 2.75rem;
+  }
+
+  .telemetry-glyph-box {
+    min-inline-size: 2.2rem;
+    min-block-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(245, 255, 0, 0.1);
+    border: 1px solid rgba(245, 255, 0, 0.35);
+    border-radius: 0.4rem;
+    padding-inline: 0.3rem;
+  }
+
+  .telemetry-glyph {
+    font-size: 1.25rem;
+    color: var(--accent-yellow);
+    font-variation-settings: 'wght' 1000;
+  }
+
+  .telemetry-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.18rem;
+    min-inline-size: 10rem;
+  }
+
+  .telemetry-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.65rem;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+  }
+
+  .telemetry-title {
+    color: var(--text-muted);
+  }
+
+  .telemetry-code {
+    color: var(--accent-cyan);
+    font-weight: 700;
+  }
+
+  .telemetry-bar-track {
+    width: 100%;
+    height: 0.28rem;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .telemetry-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-pink), var(--accent-cyan), var(--accent-yellow));
+    transition: width 0.15s ease;
+  }
+
+  .telemetry-sub {
+    color: var(--text-muted);
+    font-size: 0.62rem;
+  }
+
+  /* Overlays */
+  .game-overlay {
+    position: relative;
+    z-index: 15;
+    margin: auto;
+    padding: 1rem;
+    width: 100%;
+    max-width: 34rem;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .game-overlay[hidden] {
+    display: none !important;
+  }
+
+  .overlay-card {
+    pointer-events: auto;
+    width: 100%;
+    background: rgba(11, 13, 24, 0.9);
+    backdrop-filter: blur(18px);
+    border: 1px solid rgba(245, 255, 0, 0.32);
+    border-radius: 1.2rem;
+    padding: clamp(1.25rem, 4vw, 2.25rem);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 40px rgba(245, 255, 0, 0.08);
+  }
+
+  .overlay-menu-card {
+    text-align: start;
+    align-items: stretch;
+    gap: 1.15rem;
+  }
+
+  .menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-block-end: 0.75rem;
+    border-block-end: 1px solid var(--border-subtle);
+  }
+
+  .brand-group {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.45rem;
+  }
+
+  .brand-mark {
+    font-size: 1.45rem;
+    font-variation-settings: 'wght' 960;
+    color: var(--accent-yellow);
+  }
+
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    color: var(--accent-cyan);
+  }
+
+  .menu-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .menu-section-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+  }
+
+  .menu-games-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .menu-game-item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.7rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .menu-game-item.active {
+    border-color: var(--accent-yellow);
+    background: rgba(245, 255, 0, 0.08);
+  }
+
+  .menu-game-item.disabled {
+    opacity: 0.6;
+  }
+
+  .game-num {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent-yellow);
+    font-weight: 700;
+  }
+
+  .game-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .game-info strong {
+    font-size: 1rem;
+    font-variation-settings: 'wght' 850;
+    color: var(--text-primary);
+  }
+
+  .game-info span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-variation-settings: 'wght' 420;
+  }
+
+  .game-status-tag,
+  .game-soon-tag {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    padding: 0.18rem 0.45rem;
+    border-radius: 0.3rem;
+    font-weight: 700;
+  }
+
+  .game-status-tag {
+    background: var(--accent-yellow);
+    color: #070810;
+  }
+
+  .game-soon-tag {
+    background: rgba(0, 229, 255, 0.14);
+    color: var(--accent-cyan);
+  }
+
+  .menu-options-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+
+  .menu-opt-btn {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    padding: 0.55rem 0.65rem;
+  }
+
+  .menu-footer-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    margin-block-start: 0.25rem;
+  }
+
+  .btn-block {
+    width: 100%;
+  }
+
+  .foundry-menu-link {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--accent-cyan);
+    text-align: center;
+  }
+
+  .foundry-menu-link:hover {
+    color: var(--accent-yellow);
+  }
+
+  .brand-pill {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    color: var(--accent-cyan);
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 229, 255, 0.35);
+    background: rgba(0, 229, 255, 0.08);
+  }
+
+  .hero-title {
+    display: flex;
+    flex-direction: column;
+    line-height: 0.92;
+    margin: 0.1rem 0;
+  }
+
+  .hero-title-line1 {
+    font-size: clamp(2.6rem, 2rem + 5vw, 5.4rem);
+    font-variation-settings: 'wght' 980;
+    color: var(--accent-yellow);
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 28px rgba(245, 255, 0, 0.35);
+  }
+
+  .hero-title-line2 {
+    font-size: clamp(1.85rem, 1.3rem + 3.5vw, 3.8rem);
+    font-variation-settings: 'wght' 240;
+    color: var(--text-primary);
+    letter-spacing: 0.12em;
+  }
+
+  .hero-desc {
+    color: var(--text-muted);
+    font-size: clamp(0.88rem, 0.84rem + 0.25vw, 1.02rem);
+    font-variation-settings: 'wght' 380;
+    margin: 0;
+  }
+
+  .hero-desc code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    color: var(--accent-cyan);
+    background: rgba(0, 229, 255, 0.1);
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.25rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .btn-lg {
+    font-size: 1.05rem;
+    padding: 0.75rem 2rem;
+  }
+
+  .overlay-heading {
+    font-size: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+    font-variation-settings: 'wght' 900;
+    margin: 0;
+  }
+
+  .text-danger {
+    color: var(--accent-pink);
+  }
+
+  .badge-danger {
+    color: var(--accent-pink);
+    border-color: rgba(255, 51, 102, 0.4);
+  }
+
+  .gameover-score {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .gameover-score strong {
+    color: var(--accent-yellow);
+    font-variation-settings: 'wght' 900;
+    font-size: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .hud-telemetry {
+      display: none;
+    }
+    .menu-options-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

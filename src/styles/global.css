@@ -1,0 +1,191 @@
+@font-face {
+  font-family: 'Outpact';
+  src: url('/fonts/Outpact-VF.ttf') format('truetype');
+  font-weight: 1 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --bg-deep: #070810;
+  --bg-surface: #0e101d;
+  --bg-card: #141729;
+  --bg-card-hover: #1b2038;
+  --text-primary: #f4f5f8;
+  --text-muted: #9aa0b8;
+  --accent-yellow: #f5ff00;
+  --accent-cyan: #00e5ff;
+  --accent-pink: #ff3366;
+  --accent-green: #00ff66;
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-bright: rgba(245, 255, 0, 0.45);
+  --font-display: 'Outpact', system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+  text-align: start;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4 {
+  margin-block: 0 0.5em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+p {
+  margin-block: 0 1em;
+  text-wrap: pretty;
+  max-width: 60ch;
+  overflow-wrap: break-word;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Buttons, badges, and cards avoid fixed block-size to comply with WCAG 1.4.12 Text Spacing */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-block-size: 2.75rem;
+  padding: 0.65rem 1.4rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-variation-settings: 'wght' 780;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.btn-primary {
+  background-color: var(--accent-yellow);
+  color: #070810;
+  box-shadow: 0 0 24px rgba(245, 255, 0, 0.28);
+}
+
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  background-color: #ffffff;
+  box-shadow: 0 0 32px rgba(245, 255, 0, 0.55);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background-color: rgba(20, 23, 41, 0.75);
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.btn-outline:hover,
+.btn-outline:focus-visible {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  transform: translateY(-1px);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-block-size: 1.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--accent-yellow);
+}
+
+.section-container {
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+  padding-block: clamp(3.5rem, 7vw, 6.5rem);
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-block-end: 2.5rem;
+}
+
+.section-title {
+  font-size: clamp(2rem, 1.2rem + 3vw, 4.25rem);
+  font-variation-settings: 'wght' 900;
+  letter-spacing: -0.02em;
+}
+
+.section-subtitle {
+  color: var(--text-muted);
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+  font-variation-settings: 'wght' 350;
+}
+
+/* Custom Range Sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.12);
+  min-block-size: 0.45rem;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: var(--accent-yellow);
+  border: 2px solid #070810;
+  box-shadow: 0 0 10px rgba(245, 255, 0, 0.6);
+  cursor: grab;
+  transition: transform 0.12s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 50%;
+  background: var(--accent-yellow);
+  border: 2px solid #070810;
+  box-shadow: 0 0 10px rgba(245, 255, 0, 0.6);
+  cursor: grab;
+}

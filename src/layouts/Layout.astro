@@ -1,0 +1,49 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'OUTPACT ARCADE — Invaders (Three.js)',
+  description = 'Arcade 2.5D en Three.js con física de fuente variable Outpact-VF por Tortilla.Studio.'
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link
+      rel="preload"
+      href="/fonts/Outpact-VF.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+  </head>
+  <body>
+    <main class="arcade-main">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style>
+  :global(html),
+  :global(body) {
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .arcade-main {
+    width: 100%;
+    height: 100dvh;
+  }
+</style>
