@@ -38,7 +38,7 @@
         </div>
         <div class="telemetry-row telemetry-sub">
           <span>Resistencia física</span>
-          <span id="telemetry-hp">HP: 4/4</span>
+          <span id="telemetry-hp">HP: 1000/1000</span>
         </div>
       </div>
     </div>
@@ -302,12 +302,20 @@
   .game-hero {
     position: relative;
     width: 100%;
+    max-width: 60rem;
+    margin-inline: auto;
     height: 100dvh;
     background-color: var(--bg-deep);
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+  }
+
+  @media (min-width: 60.5rem) {
+    .game-hero {
+      border-inline: 1px solid var(--border-subtle);
+    }
   }
 
   .game-canvas {

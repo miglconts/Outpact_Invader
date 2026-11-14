@@ -277,22 +277,6 @@ export class OutpactArkanoid3D {
 
     this.starPoints = new THREE.Points(geo, mat);
     this.scene.add(this.starPoints);
-
-    // Lateral borders
-    const borderGeo = new THREE.BoxGeometry(0.8, this.worldHeight * 1.5, 2);
-    const borderMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.25 });
-    
-    const leftBorder = new THREE.Mesh(borderGeo, borderMat);
-    leftBorder.position.set(-this.worldWidth * 0.49, 0, 0);
-    this.scene.add(leftBorder);
-
-    const rightBorder = new THREE.Mesh(borderGeo, borderMat);
-    rightBorder.position.set(this.worldWidth * 0.49, 0, 0);
-    this.scene.add(rightBorder);
-
-    const topBorder = new THREE.Mesh(new THREE.BoxGeometry(this.worldWidth, 0.8, 2), borderMat);
-    topBorder.position.set(0, this.worldHeight * 0.48, 0);
-    this.scene.add(topBorder);
   }
 
   private createPaddleMesh(): THREE.Group {
@@ -335,39 +319,37 @@ export class OutpactArkanoid3D {
   }
 
   /**
-   * Builds word rows where each character is tightly fitted (fitty concept)
-   * touching side-by-side with zero artificial gap.
+   * Builds uniform square glyph rows filling the available width so letters are never deformed on desktop or mobile.
+   * Each glyph's initial health is randomly chosen and directly equals its variable font weight (250..1000).
    */
-  private buildLevel(lvl: number) {
+  private buildLevel(_lvl: number) {
     this.clearLetters();
 
-    const words = [
-      'OUTPACT',
-      'VARIABLE',
-      'ARKANOID'
-    ];
-
+    const rowCount = 3;
     const startY = this.worldHeight * 0.35;
-    const rowHeight = 7.5;
+    const targetRowHeight = 7.5;
+    const rowGap = 1.2;
     const availableWidth = this.worldWidth * 0.88; // Span across the playfield
 
-    words.forEach((word, rowIdx) => {
-      const y = startY - rowIdx * (rowHeight + 1.2);
-      const chars = word.split('');
-      const charCount = chars.length;
+    // Keep 1:1 square aspect ratio (charSize x charSize) to match the 256x256 canvas and prevent stretching
+    const charCount = Math.max(1, Math.round(availableWidth / targetRowHeight));
+    const charSize = availableWidth / charCount;
+    const startX = -availableWidth / 2 + charSize / 2;
 
-      // Fitty logic: compute individual width for each character to span availableWidth snugly
-      const charWidth = availableWidth / charCount;
-      const startX = -availableWidth / 2 + charWidth / 2;
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const weightPool = [250, 500, 750, 1000];
 
-      chars.forEach((char, colIdx) => {
-        const x = startX + colIdx * charWidth;
-        // Higher rows take more hits
-        const health = Math.max(1, 4 - rowIdx + (lvl - 1));
-        const letter = this.createLetterBrick(x, y, charWidth, rowHeight, char, health);
+    for (let rowIdx = 0; rowIdx < rowCount; rowIdx++) {
+      const y = startY - rowIdx * (charSize + rowGap);
+
+      for (let colIdx = 0; colIdx < charCount; colIdx++) {
+        const x = startX + colIdx * charSize;
+        const char = alphabet[Math.floor(Math.random() * alphabet.length)];
+        const health = weightPool[Math.floor(Math.random() * weightPool.length)];
+        const letter = this.createLetterBrick(x, y, charSize, charSize, char, health);
         this.letters.push(letter);
-      });
-    });
+      }
+    }
   }
 
   private createLetterBrick(
@@ -383,7 +365,7 @@ export class OutpactArkanoid3D {
     canvas.height = 256;
     const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
 
-    const initialWght = 1000;
+    const initialWght = Math.max(1, Math.min(1000, maxHealth));
     const imgData = this.renderGlyphToCanvas(ctx, canvas.width, canvas.height, label, initialWght, false);
 
     const texture = new THREE.CanvasTexture(canvas);
@@ -778,9 +760,10 @@ export class OutpactArkanoid3D {
             this.ballVY *= -1;
           }
 
-          // Damage glyph
-          letter.health -= 1;
-          const newTargetWght = Math.max(1, (letter.health / letter.maxHealth) * 1000);
+          // Damage glyph (health is 1:1 equivalent to font weight)
+          const hitDamage = 250;
+          letter.health = Math.max(0, letter.health - hitDamage);
+          const newTargetWght = Math.max(1, Math.min(1000, letter.health));
           letter.targetWght = newTargetWght;
           letter.hitFlash = 0.12;
 
